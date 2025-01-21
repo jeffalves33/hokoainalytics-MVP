@@ -1,0 +1,40 @@
+# Ignorar arquivos compilados em Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+# Ignorar configurações de ambiente virtual
+.env
+env/
+venv/
+ENV/
+.venv/
+.ENV/
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar arquivos de banco de dados local
+*.sqlite3
+
+# Ignorar arquivos de pacotes instalados
+*.egg-info/
+.eggs/
+
+# Ignorar arquivos temporários criados pelo sistema operacional
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Ignorar configurações de IDEs/editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignorar arquivos testes
+other/*
+
+# Ignorar arquivos credenciais
+credentials.json
