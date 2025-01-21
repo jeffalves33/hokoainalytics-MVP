@@ -7,17 +7,6 @@ from google.oauth2 import service_account
 from google.analytics.data import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import DateRange, Metric, Dimension, RunReportRequest
 from api.googleAnalytics_api import get_googleAnalytics_traffic, get_googleAnalytics_search_volume
-import json
-import os
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-credentials_path = os.path.join(current_dir, "../../../auth/credentials.json")
-with open(credentials_path, "r") as f:
-    credentials_info = json.load(f)
-property_id = os.getenv("GOOGLE_PROPERTY_ID")
-
-credentials = service_account.Credentials.from_service_account_info(credentials_info)
-client = BetaAnalyticsDataClient(credentials=credentials)
 
 def table_chart_websiteTraffic(start_date, end_date):
     start = datetime.strptime(start_date.isoformat(), "%Y-%m-%d")

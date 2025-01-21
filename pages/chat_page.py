@@ -6,7 +6,6 @@ import time
 from dotenv import load_dotenv
 import os
 
-# Carrega as variáveis do arquivo .env
 load_dotenv()
 
 ASSISTANT_ID = os.getenv("ASSISTANT_ID")
