@@ -48,6 +48,7 @@ def get_googleAnalytics_impressions(start_date, end_date):
 def get_googleAnalytics_traffic(start_date, end_date):
     start = datetime.strptime(start_date.isoformat(), "%Y-%m-%d")
     end = datetime.strptime(end_date.isoformat(), "%Y-%m-%d")
+    all_dates = [(start + timedelta(days=i)).strftime("%Y%m%d") for i in range((end - start).days + 1)]
 
     request = RunReportRequest(
         property=f"properties/{property_id}",
@@ -58,7 +59,15 @@ def get_googleAnalytics_traffic(start_date, end_date):
 
     response = client.run_report(request)
 
-    return response
+    results = {}
+    for row in response.rows:
+        date = row.dimension_values[0].value
+        sessions = int(row.metric_values[0].value)
+        results[date] = results.get(date, 0) + sessions
+
+    sessions_array = [results.get(date, 0) for date in all_dates]
+
+    return sessions_array
 
 def get_googleAnalytics_search_volume(start_date, end_date):
     start = datetime.strptime(start_date.isoformat(), "%Y-%m-%d")
