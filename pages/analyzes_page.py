@@ -1,62 +1,129 @@
-# pages/analyzes_page.py
 import streamlit as st
-import time
-from openai import OpenAI
-from datetime import datetime
 from pages.components.filters import filters
-from datetime import datetime
 from dotenv import load_dotenv
 import os
+import pandas as pd
+from datetime import datetime
+
+# Importa a classe AdvancedDataAnalyst
+from utils.advanced_data_analyst import AdvancedDataAnalyst
 
 # Carrega as variáveis do arquivo .env
 load_dotenv()
 
-ASSISTANT_ID = os.getenv("ASSISTANT_ID")
-client = OpenAI(api_key=os.getenv("API_KEY"))
-
-def agentAI(textEmpty, THREAD_ID, selected_filters):
-    start_date = selected_filters.get('data_inicial')
-    end_date = selected_filters.get('data_final')
-    platform_data = selected_filters.get('platform')
-    system_prompt = f'Hoje é dia {datetime.today().strftime('%Y-%m-%d')}. Você é um chatbot de análise de dados e não quero conversação, quero apenas a análise. Respostas sempre em portugês - Brasil. Baseado no intervalo de {start_date} até {end_date}, gere uma análise {textEmpty} baseado em meus dados da plataforma {platform_data}. Seja fora da curva e não me diga apenas o básico. Use o máximo de conhecimento que tem sobre análise de dados.'
-    
-    message = client.beta.threads.messages.create(
-        thread_id=THREAD_ID,
-        role="user",
-        content=system_prompt
-    )
-    run = client.beta.threads.runs.create(thread_id=THREAD_ID, assistant_id=ASSISTANT_ID)
-    while run.status != "completed":
-        run = client.beta.threads.runs.retrieve(thread_id=THREAD_ID, run_id=run.id)
-        time.sleep(1)
-    
-    message_response = client.beta.threads.messages.list(thread_id=THREAD_ID)
-    messages = message_response.data
-
-    laster_message = messages[0]
-    return laster_message.content[0].text.value.strip()
+# Inicializa o analista como variável global para reutilização
+@st.cache_resource
+def get_analyst():
+    return AdvancedDataAnalyst()
 
 def analyzes_page():
+    st.title("Análises")
+    
+    # Obtém os filtros selecionados
     selected_filters = filters("analyzes_page")
+    
+    # Define o cliente como 1 (fixo)
+    client_id = 1
+    
+    # Obtém a plataforma dos filtros
+    platform = 'facebook'
+    
+    # Obtém as datas dos filtros
+    start_date = selected_filters.get("data_inicio", None)
+    end_date = selected_filters.get("data_fim", None)
+    
+    # Converte datas para o formato correto se necessário
+    if isinstance(start_date, datetime):
+        start_date = start_date.strftime("%Y-%m-%d")
+    if isinstance(end_date, datetime):
+        end_date = end_date.strftime("%Y-%m-%d")
+    
+    # Verifica se a plataforma foi selecionada
+    if not platform:
+        st.warning("Por favor, selecione uma plataforma para continuar.")
+        return
+    
+    # Cria layout de colunas para os botões
     col1, col2, col3 = st.columns(3)
-    botao_clicado = None
-    THREAD_ID = None
+    
+    # Armazena o tipo de análise selecionada em uma variável de sessão
+    if "tipo_analise" not in st.session_state:
+        st.session_state.tipo_analise = None
 
     with col1:
         if st.button("Descritiva"):
-            botao_clicado = "descritiva"
-            THREAD_ID = os.getenv("THREAD_ID")
+            st.session_state.tipo_analise = "descriptive"
     with col2:
         if st.button("Preditiva"):
-            botao_clicado = "preditiva"
-            THREAD_ID = os.getenv("THREAD_ID")
+            st.session_state.tipo_analise = "predictive"
     with col3:
         if st.button("Prescritiva"):
-            botao_clicado = "prescritiva"
-            THREAD_ID = os.getenv("THREAD_ID")
+            st.session_state.tipo_analise = "prescriptive"
 
-    if botao_clicado:
-        response = agentAI(botao_clicado, THREAD_ID, selected_filters)
-        st.write(response)
+    # Formato de saída
+    formato_opcoes = ["detalhado", "resumido", "tópicos"]
+    formato = st.selectbox("Formato do relatório", formato_opcoes, index=0)
+
+    # Opção para consulta personalizada
+    usar_consulta_personalizada = st.checkbox("Usar consulta personalizada")
+    consulta_personalizada = None
+
+    if usar_consulta_personalizada:
+        consulta_personalizada = st.text_area(
+            "Digite sua consulta personalizada",
+            "Analyze os dados e forneça insights sobre o desempenho."
+        )
+
+    # Botão Gerar à direita
+    _, _, col_gerar = st.columns([1, 1, 1])
+    
+    with col_gerar:
+        gerar_analise = st.button("Gerar", type="primary")
+
+    # Executar análise somente quando o botão Gerar for clicado
+    if gerar_analise:
+        # Verifica se um tipo de análise foi selecionado
+        if not st.session_state.tipo_analise:
+            st.error("Por favor, selecione um tipo de análise (Descritiva, Preditiva ou Prescritiva).")
+        else:
+            try:
+                with st.spinner(f"Realizando análise {st.session_state.tipo_analise}..."):
+                    # Inicializa o analista
+                    analyst = get_analyst()
+                    
+                    # Executa a análise
+                    response = analyst.run_analysis(
+                        client_id=client_id,
+                        platform=platform,
+                        analysis_type=st.session_state.tipo_analise,
+                        custom_query=consulta_personalizada,
+                        start_date=start_date,
+                        end_date=end_date,
+                        output_format=formato
+                    )
+                    
+                    # Exibe o resultado
+                    if response["status"] == "success":
+                        st.subheader(f"Análise {st.session_state.tipo_analise.capitalize()}")
+                        
+                        # Adiciona metadados da análise
+                        with st.expander("Detalhes da análise", expanded=False):
+                            st.write(f"**Cliente:** {client_id}")
+                            st.write(f"**Plataforma:** {platform}")
+                            st.write(f"**Período:** {start_date or 'Início'} até {end_date or 'Hoje'}")
+                            st.write(f"**Tempo de execução:** {response.get('execution_time', 'N/A')} segundos")
+                            
+                        # Exibe o resultado principal
+                        st.markdown(response["result"])
+                    else:
+                        st.error(f"Erro na análise: {response['result']}")
+            except Exception as e:
+                st.error(f"Ocorreu um erro ao executar a análise: {str(e)}")
     else:
-        st.write("\nClique em um dos botões para ver um relatório de análise.")
+        if st.session_state.tipo_analise:
+            st.info("Clique no botão 'Gerar' para executar a análise.")
+        else:
+            st.info("Selecione um tipo de análise e clique no botão 'Gerar' para executar.")
+
+if __name__ == "__main__":
+    analyzes_page()
