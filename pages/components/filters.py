@@ -31,7 +31,7 @@ def gender():
 def platform():
     radio = st.radio(
         "",
-        ["Facebook", "Google Analytics"],
+        ["Facebook", "Google Analytics", "Instagram"],
         horizontal=True
     )
     return {"platform": radio}
@@ -39,15 +39,10 @@ def platform():
 def filters(page):
     filters_obj = {}
     date_data = date_inputs()
-    gender_data = None
     platform_data = None
 
     if date_data:
         filters_obj.update(date_data)
-
-    if(page == "dashboard_page"):
-        gender_data = gender()
-        filters_obj.update(gender_data)
 
     if(page == "analyzes_page"):
         platform_data = platform()
