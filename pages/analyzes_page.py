@@ -78,7 +78,7 @@ def analyzes_page():
     _, _, col_gerar = st.columns([1, 1, 1])
     
     with col_gerar:
-        gerar_analise = st.button("Gerar", type="primary")
+        gerar_analise = st.button("Gerar Análise", type="primary")
 
     # Executar análise somente quando o botão Gerar for clicado
     if gerar_analise:
