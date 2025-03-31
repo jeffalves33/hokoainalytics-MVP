@@ -21,7 +21,7 @@ def dashboard_page():
         )
         return
 
-    date_difference = (end_date - start_date).days
+    date_difference = (end_date - start_date).days + 1
     if date_difference > 30:
         st.error(
             "O intervalo entre as datas é maior que 30 dias. Por favor, selecione um período de até 30 dias.",
