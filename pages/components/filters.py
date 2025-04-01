@@ -30,12 +30,22 @@ def gender():
     }
 
 def platform():
-    radio = st.radio(
+    display_options = ["Facebook", "Google Analytics", "Instagram"]
+
+    value_mapping = {
+        "Facebook": "facebook",
+        "Google Analytics": "google_analytics",
+        "Instagram": "instagram"
+    }
+
+    selected_display = st.radio(
         "",
-        ["Facebook", "Google Analytics", "Instagram"],
+        display_options,
         horizontal=True
     )
-    return {"platform": radio}
+
+    selected_value = value_mapping[selected_display]
+    return {"platform": selected_value}
 
 def filters(page):
     filters_obj = {}

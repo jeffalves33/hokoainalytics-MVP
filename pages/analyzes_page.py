@@ -18,32 +18,23 @@ def get_analyst():
 
 def analyzes_page():
     st.title("Análises")
-    
-    # Obtém os filtros selecionados
+
     selected_filters = filters("analyzes_page")
-    
-    # Define o cliente como 1 (fixo)
+
     client_id = 1
-    
-    # Obtém a plataforma dos filtros
-    platform = 'facebook'
-    
-    # Obtém as datas dos filtros
+    platform = selected_filters.get('platform')
     start_date = selected_filters.get("data_inicio", None)
     end_date = selected_filters.get("data_fim", None)
-    
-    # Converte datas para o formato correto se necessário
+
     if isinstance(start_date, datetime):
         start_date = start_date.strftime("%Y-%m-%d")
     if isinstance(end_date, datetime):
         end_date = end_date.strftime("%Y-%m-%d")
-    
-    # Verifica se a plataforma foi selecionada
+
     if not platform:
         st.warning("Por favor, selecione uma plataforma para continuar.")
         return
-    
-    # Cria layout de colunas para os botões
+
     col1, col2, col3 = st.columns(3)
     
     # Armazena o tipo de análise selecionada em uma variável de sessão
@@ -76,7 +67,7 @@ def analyzes_page():
 
     # Botão Gerar à direita
     _, _, col_gerar = st.columns([1, 1, 1])
-    
+
     with col_gerar:
         gerar_analise = st.button("Gerar Análise", type="primary")
 
