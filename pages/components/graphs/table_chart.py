@@ -2,10 +2,6 @@
 import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
-from google.analytics.data import BetaAnalyticsDataClient
-from google.oauth2 import service_account
-from google.analytics.data import BetaAnalyticsDataClient
-from google.analytics.data_v1beta.types import DateRange, Metric, Dimension, RunReportRequest
 from api.googleAnalytics_api import get_googleAnalytics_traffic, get_googleAnalytics_search_volume
 
 def table_chart_websiteTraffic(start_date, end_date):
@@ -13,10 +9,8 @@ def table_chart_websiteTraffic(start_date, end_date):
     end = datetime.strptime(end_date.isoformat(), "%Y-%m-%d")
     all_dates = [(start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((end - start).days + 1)]
 
-    # Get traffic data (returns a list of sessions per date)
     googleAnalytics_traffic = get_googleAnalytics_traffic(start_date, end_date)
 
-    # Create dataframe from session values
     data = []
     for date, sessions in zip(all_dates, googleAnalytics_traffic):
         row_data = {
@@ -29,8 +23,6 @@ def table_chart_websiteTraffic(start_date, end_date):
     df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d")
     df = df.sort_values("Date")
 
-    # Since we don't have channel data in the returned list, 
-    # we'll use a simplified version without channel grouping
     pivot_table = df.pivot_table(
         index="Date",
         values="Sessions",

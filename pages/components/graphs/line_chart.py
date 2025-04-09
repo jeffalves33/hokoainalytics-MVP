@@ -1,33 +1,21 @@
 #pages/components/graphs/line_chart.py
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import pytz
-from dotenv import load_dotenv
-import os
 
 from api.googleAnalytics_api import get_googleAnalytics_impressions
 from api.instagram_api import get_instagram_reach, get_instagram_impressions
 from api.facebook_api import get_facebook_insights
-from datetime import datetime, timedelta, date
-
-load_dotenv() 
-
-FACEBOOK_BASE_URL = os.getenv("FACEBOOK_BASE_URL")
-FACEBOOK_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID")
-FACEBOOK_ACCESS_TOKEN = os.getenv("FACEBOOK_ACCESS_TOKEN")
-INSTAGRAM_BASE_URL = os.getenv("INSTAGRAM_BASE_URL")
-INSTAGRAM_PAGE_ID = os.getenv("INSTAGRAM_PAGE_ID")
-INSTAGRAM_ACCESS_TOKEN = os.getenv("INSTAGRAM_ACCESS_TOKEN")
+from datetime import timedelta
 
 def line_chart_Reach(start_date, end_date, timezone='America/Sao_Paulo'):
     tz = pytz.timezone(timezone)
     dates = pd.date_range(start=(start_date + timedelta(days=1)), end=(end_date + timedelta(days=1)))
     dates = dates.tz_localize('UTC').tz_convert(tz)
 
-    facebook_reach = get_facebook_insights(FACEBOOK_BASE_URL, FACEBOOK_PAGE_ID, FACEBOOK_ACCESS_TOKEN, (start_date - timedelta(days=1)), end_date, "page_impressions_unique")
-    instagram_reach = get_instagram_reach(INSTAGRAM_BASE_URL, INSTAGRAM_PAGE_ID, INSTAGRAM_ACCESS_TOKEN, (start_date - timedelta(days=1)), end_date)
+    facebook_reach = get_facebook_insights((start_date - timedelta(days=1)), end_date, "page_impressions_unique")
+    instagram_reach = get_instagram_reach((start_date - timedelta(days=1)), end_date)
 
     reach_data = pd.DataFrame({
         'Data': dates,
@@ -46,9 +34,9 @@ def line_chart_Impressions(start_date, end_date, timezone='America/Sao_Paulo'):
     tz = pytz.timezone(timezone)
     dates = pd.date_range(start=(start_date + timedelta(days=1)), end=(end_date + timedelta(days=1)))
     dates = dates.tz_localize('UTC').tz_convert(tz)
-    facebook_impressions = get_facebook_insights(FACEBOOK_BASE_URL, FACEBOOK_PAGE_ID, FACEBOOK_ACCESS_TOKEN, (start_date - timedelta(days=1)), end_date, "page_impressions")
-    instagram_impressions = get_instagram_impressions(INSTAGRAM_BASE_URL, INSTAGRAM_PAGE_ID, INSTAGRAM_ACCESS_TOKEN, (start_date - timedelta(days=1)), end_date)
 
+    facebook_impressions = get_facebook_insights((start_date - timedelta(days=1)), end_date, "page_impressions")
+    instagram_impressions = get_instagram_impressions((start_date - timedelta(days=1)), end_date)
     googleAnalytics_impressions = get_googleAnalytics_impressions(start_date, end_date)
 
     reach_data = pd.DataFrame({

@@ -1,11 +1,26 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import timedelta
+import streamlit as st
 
-def get_instagram_reach(base_url, page_id, access_token, since, until, period="day"):
-    url = f"{base_url}/{page_id}/insights"
+BASE_URL= "https://graph.facebook.com/v22.0"
+
+def get_instagram_credentials():
+    if not st.session_state.selected_client_data or 'keys' not in st.session_state.selected_client_data:
+        raise ValueError("Chaves do cliente não encontradas")
+    
+    keys = st.session_state.selected_client_data['keys']
+    return {
+        'page_id': keys['instagram_page_id'],
+        'access_token': keys['instagram_access_token']
+    }
+
+def get_instagram_reach(since, until, period="day"):
+    credentials = get_instagram_credentials()
+
+    url = f"{BASE_URL}/{credentials['page_id']}/insights"
     params = {
         "metric": 'reach',
-        "access_token": access_token,
+        "access_token": credentials['access_token'],
         "period": period,
         "since": since,
         "until": until
@@ -17,10 +32,11 @@ def get_instagram_reach(base_url, page_id, access_token, since, until, period="d
         values = [item["value"] for item in data["data"][0]["values"]]
         return values
     else:
-        print(f"Erro: {response.status_code} - {response.text}")
+        st.error(f"Erro na API do Instagram: {response.status_code} - {response.text}")
         return None
 
-def get_instagram_impressions(base_url, page_id, access_token, since, until, period="day"):
+def get_instagram_impressions(since, until, period="day"):
+    credentials = get_instagram_credentials()
     start = since
     end = until
 
@@ -36,11 +52,11 @@ def get_instagram_impressions(base_url, page_id, access_token, since, until, per
         until = next_date.strftime("%Y-%m-%d")
         
         # Prepare URL and parameters
-        url = f"{base_url}/{page_id}/insights"
+        url = f"{BASE_URL}/{credentials['page_id']}/insights"
         params = {
             "metric": 'views',
             "metric_type": 'total_value',
-            "access_token": access_token,
+            "access_token": credentials['access_token'],
             "period": "day",
             "since": since,
             "until": until
@@ -73,12 +89,13 @@ def get_instagram_impressions(base_url, page_id, access_token, since, until, per
     
     return daily_results
 
+def get_instagram_follows():
+    credentials = get_instagram_credentials()
 
-def get_instagram_follows(base_url, page_id, access_token):
-    url = f"{base_url}/{page_id}"
+    url = f"{BASE_URL}/{credentials['page_id']}"
     params = {
         "fields": 'followers_count',
-        "access_token": access_token,
+        "access_token": credentials['access_token'],
     }
 
     response = requests.get(url, params=params)
@@ -87,5 +104,5 @@ def get_instagram_follows(base_url, page_id, access_token):
         value = data["followers_count"]
         return value
     else:
-        print(f"Erro: {response.status_code} - {response.text}")
+        st.error(f"Erro na API do Instagram: {response.status_code} - {response.text}")
         return None

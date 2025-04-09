@@ -1,7 +1,17 @@
 import requests
+import streamlit as st
 
-def get_facebook_insights(base_url, page_id, access_token, since, until, metric, period="day"):
-    url = f"{base_url}/{page_id}/insights"
+BASE_URL= "https://graph.facebook.com/v20.0"
+
+def get_facebook_insights(since, until, metric, period="day"):
+    if not st.session_state.selected_client_data or 'keys' not in st.session_state.selected_client_data:
+        raise ValueError("Chaves do cliente não encontradas")
+    
+    keys = st.session_state.selected_client_data['keys']
+    page_id = keys['facebook_page_id']
+    access_token = keys['facebook_access_token']
+
+    url = f"{BASE_URL}/{page_id}/insights"
     params = {
         "metric": metric,
         "access_token": access_token,
@@ -16,5 +26,5 @@ def get_facebook_insights(base_url, page_id, access_token, since, until, metric,
         values = [item["value"] for item in data["data"][0]["values"]]
         return values
     else:
-        print(f"Erro: {response.status_code} - {response.text}")
+        st.error(f"Erro na API do Facebook: {response.status_code} - {response.text}")
         return None

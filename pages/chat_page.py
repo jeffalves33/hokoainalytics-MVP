@@ -13,6 +13,14 @@ from utils.db.vector_db import VectorDBManager
 load_dotenv()
 
 def chat_page():
+    if not st.session_state.selected_client_data:
+        st.warning("Por favor, selecione um cliente para visualizar o dashboard.")
+        return
+
+    if 'keys' not in st.session_state.selected_client_data:
+        st.error("Chaves de API não encontradas para este cliente.")
+        return
+
     st.title("Chat Analítico")
     
     # Constantes para o cliente específico de teste

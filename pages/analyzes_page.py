@@ -1,8 +1,6 @@
 import streamlit as st
 from pages.components.filters import filters
 from dotenv import load_dotenv
-import os
-import pandas as pd
 from datetime import datetime
 
 # Importa a classe AdvancedDataAnalyst
@@ -17,6 +15,14 @@ def get_analyst():
     return AdvancedDataAnalyst()
 
 def analyzes_page():
+    if not st.session_state.selected_client_data:
+        st.warning("Por favor, selecione um cliente para visualizar o dashboard.")
+        return
+        
+    if 'keys' not in st.session_state.selected_client_data:
+        st.error("Chaves de API não encontradas para este cliente.")
+        return
+
     st.title("Análises")
 
     selected_filters = filters("analyzes_page")
