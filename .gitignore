@@ -38,3 +38,7 @@ other/*
 
 # Ignorar arquivos credenciais
 credentials.json
+
+
+# Momentaneamente
+inserir_dados_vector_db.py
